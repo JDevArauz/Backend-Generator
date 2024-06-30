@@ -54,7 +54,7 @@ class ModelsModule:
             
         model = f"""
         const {{ Model, DataTypes }} = require('sequelize');
-        const sequelize = require('../../libs/sequelize');
+        const sequelize = require('../libs/sequelize');
 
         const {model_name.upper()}_TABLE = '{model_name}';
 

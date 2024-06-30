@@ -6,7 +6,7 @@ class DBConfigModule:
         sequelize = """
         const { Sequelize } = require('sequelize');
         const  { config } = require('../config/config');
-        const setupModels = require('./../models');
+        const setupModels = require('../models');
 
         const sequelize = new Sequelize(
             config.dbName, // NAME DATABASE
@@ -31,7 +31,7 @@ class DBConfigModule:
 
         const config = {
         env: process.env.NODE_ENV || 'DEFAULT', // CHANGE DEFAULT TO YOUR ENVIRONMENT
-        port: process.env.DB_PORT || 3000, // PORT
+        port: process.env.DB_PORT || 3000, // API PORT
         dbUser:  process.env.DB_USER,
         dbPassword:  process.env.DB_PASSWORD,
         dbHost:  process.env.DB_HOST,
@@ -45,14 +45,41 @@ class DBConfigModule:
     
     def generate_env(self):
         env = """
-        NODE_ENV=DEFAULT
-        DB_USER=root
-        DB_PASSWORD=
-        DB_HOST=localhost
-        DB_NAME=database
-        DB_PORT=3306
+        NODE_ENV="DEFAULT"
+        DB_USER="root"
+        DB_PASSWORD=""
+        DB_HOST="localhost"
+        DB_NAME="database"
+        DB_PORT="3306"
         """
         return env
+    
+    def generate_package(self):
+        package = """
+        {
+        "name": "backend",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "scripts": {
+            "dev": "nodemon index.js",
+            "start": "node index.js"
+        },
+        "keywords": [],
+        "author": "",
+        "license": "ISC",
+        "dependencies": {
+            "body-parser": "^1.20.2",
+            "cors": "^2.8.5",
+            "dotenv": "^16.4.5",
+            "express": "^4.19.2",
+            "mysql2": "^3.9.7",
+            "nodemon": "^3.1.0",
+            "sequelize": "^6.37.3"
+        }
+        }
+        """
+        return package
     
     def generate_index(self):
         index = """
@@ -66,7 +93,7 @@ class DBConfigModule:
         const APIRouter = require('./routes');
         const PORT = process.env.PORT || 3000;
 
-        // MIDLEWARES
+        // MIDDLEWARES
         const corsOptions = {
         origin: '*', // ALLOW ALL ORIGIN
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // HTTP METHODS ALLOWED

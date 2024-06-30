@@ -66,7 +66,7 @@ class Main:
         """
         Crea los directorios necesarios para almacenar los archivos generados.
         """
-        directories = ['models', 'controllers', 'services', 'routes', 'config', 'libs']
+        directories = ['backend/models', 'backend/controllers', 'backend/services', 'backend/routes', 'backend/config', 'backend/libs']
         for directory in directories:
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -92,10 +92,10 @@ class Main:
             service_content = service.generate_service(self, table_name)
             router_content = router.generate_router(self, table_name)
             
-            model_file_path = f'models/{table_name}.model.js'
-            controller_file_path = f'controllers/{table_name}.controller.js'
-            service_file_path = f'services/{table_name}.service.js'
-            router_file_path = f'routes/{table_name}.router.js'
+            model_file_path = f'backend/models/{table_name}.model.js'
+            controller_file_path = f'backend/controllers/{table_name}.controller.js'
+            service_file_path = f'backend/services/{table_name}.service.js'
+            router_file_path = f'backend/routes/{table_name}.router.js'
             
             with open(model_file_path, 'w', encoding='utf-8') as model_file:
                 model_file.write(model_content)
@@ -114,12 +114,12 @@ class Main:
             print(f"Archivo de enrutador generado: {router_file_path}")
             
         # PATHS FOR CONFIGURATION FILES
-        models_index_file_path = 'models/index.js'
-        routes_index_file_path = 'routes/index.js' 
-        app_file_path = 'index.js'
-        env_file_path = '.env'
-        config_file_path = 'config/config.js'
-        libs_file_path = 'libs/sequelize.js'
+        models_index_file_path = 'backend/models/index.js'
+        routes_index_file_path = 'backend/routes/index.js' 
+        app_file_path = 'backend/index.js'
+        env_file_path = 'backend/.env'
+        config_file_path = 'backend/config/config.js'
+        libs_file_path = 'backend/libs/sequelize.js'
         
         setup_content = model.generate_setup_models(self, tables)
         with open(models_index_file_path, 'w', encoding='utf-8') as index_file:
@@ -145,6 +145,10 @@ class Main:
         with open(libs_file_path, 'w', encoding='utf-8') as libs_file:
             libs_file.write(dbconfig.generate_sequelize_config(self))
             print(f"Archivo sequelize.js generado en: {libs_file_path}")
+        
+        with open('backend/package.json', 'w', encoding='utf-8') as package_file:
+            package_file.write(dbconfig.generate_package(self))
+            print("Archivo package.json generado en: backend/package.json")
             
         print("BACKEND GENERADO CON ÉXITO.")
         

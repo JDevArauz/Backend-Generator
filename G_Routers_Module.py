@@ -22,7 +22,6 @@ class RoutersModule:
     def generate_index_router(self):
         index_router = """
         const express = require('express');
-        const nodemailer = require('nodemailer');
     
         // IMPORT ROUTERS
         // EXAMPLE: const users = require('./Users.router');
