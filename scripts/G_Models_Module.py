@@ -11,6 +11,16 @@ class ModelsModule:
         Returns:
             str: Contenido del archivo index.js que inicializa todos los modelos y define las asociaciones.
         """
+        def generate_associations(tables):
+            associations = ""
+            for table_name, columns in tables.items():
+                for column in columns:
+                    column_name, column_type = column
+                    if column_type == 'FOREIGN':
+                        referenced_table = column_name.split('_')[1]  # Ajustamos esta lógica para obtener la tabla referenciada
+                        associations += f"    {table_name}.belongsTo({referenced_table}, {{ foreignKey: '{column_name}' }});\n"
+                        associations += f"    {referenced_table}.hasMany({table_name}, {{ foreignKey: '{column_name}' }});\n"
+            return associations
         setup_content = ''
         for table_name in tables:
             setup_content += f"const {{ {table_name}, {table_name}Schema }} = require('./{table_name}.model');\n"
@@ -20,9 +30,13 @@ class ModelsModule:
         for table_name in tables:
             setup_content += f"    {table_name}.init({table_name}Schema, {table_name}.config(sequelize));\n"
         
-        # Añadir definiciones de asociaciones aquí (si es necesario)
-
-        setup_content += "\n\t//DEFINE YOUR ASSOCIATIONS HERE\n}\n\nmodule.exports = setupModels;\n"
+        setup_content += "\n    //DEFINE YOUR ASSOCIATIONS HERE\n"
+        
+        # Aquí agregamos las asociaciones de los modelos
+        associations = generate_associations(tables)
+        setup_content += associations
+        
+        setup_content += "}\n\nmodule.exports = setupModels;\n"
 
         return setup_content
 
@@ -78,14 +92,29 @@ class ModelsModule:
         """
         for column in columns:
             column_name, column_type = column
-            js_type = data_type_converter(column_type)
-            allow_null = 'false' if 'NOT NULL' in column_type.upper() else 'true'
 
+            js_type = data_type_converter(column_type)
+            if 'NOT NULL' in column_type.upper():
+                allow_null = 'false'
+            else:
+                allow_null = 'true'
+                
+            if '|' in column_type:
+                primary_key = 'true'
+            else:
+                primary_key = 'false'
+
+            # Verificar si es una columna normal o una clave foránea
+            
             model += f"""
         {column_name}: {{
             allowNull: {allow_null},
             type: {js_type},
-            field: '{column_name}'
+            field: '{column_name}',
+            """
+            if primary_key == 'true':
+                model += f"""primaryKey: {primary_key},"""
+            model += f"""
         }},
         """
         model = model.rstrip(',\n') + """

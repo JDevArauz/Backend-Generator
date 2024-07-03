@@ -34,27 +34,33 @@ class Main:
         try:
             with open(sql_file_path, 'r', encoding='utf-8') as file:
                 sql_content = file.readlines()
+                print(f"Archivo '{sql_file_path}' leído con éxito.")
         except FileNotFoundError:
             print(f"Error: No se encontró el archivo '{sql_file_path}'.")
             return {}
         
         
-        column_pattern = re.compile(r'`(\w+)` (\w+(\(\d+\))?)', re.IGNORECASE)
+        column_pattern = re.compile(r'(?:`(\w+)` (\w+(?:\(\d+\))?)|PRIMARY KEY \(`(\w+)`\))', re.IGNORECASE)
         tables_dict = {}
         for line in sql_content:
             if ';\n' in line and write:
                 write = False
                 columns += line  
                 columns_definitions = []
+                primary_key = re.compile(r'PRIMARY KEY \(`(\w+)`\)', re.IGNORECASE).findall(columns)
                 for column_match in column_pattern.finditer(columns):
                     column_name = column_match.group(1)
                     column_type = column_match.group(2)
+                    if primary_key[0] == column_name:
+                        column_type += '|'
+                    if column_name is None or column_type is None:
+                        continue
                     columns_definitions.append((column_name, column_type))
                 tables_dict[table] = columns_definitions
                 columns = ''
             if 'CREATE TABLE' in line:
                 write = True
-                table = re.compile(r'`(\w+)`').findall(line)[0]  # Extrae el nombre de la tabla
+                table = re.compile(r'`(\w+)`').findall(line)[0]
                 continue
             if write:
                 columns += line
@@ -77,9 +83,10 @@ class Main:
         Analiza el archivo SQL, genera archivos de modelo, controlador, servicio y enrutador,
         y los guarda en los directorios correspondientes.
         """
-        sql_file_path = str(input("Ingresa la ruta de tu base de datos SQL y presiona ENTER\nPOR EJEMPLO-> C:\\Users\\Personal\\Escritorio\\BD.sql\n-> "))
+        sql_file_path = str(input("Ingresa la ruta de tu base de datos SQL y presiona ENTER\nPOR EJEMPLO-> C:\\Users\\Personal\\Escritorio\\BD.sql\n-> ")).replace('"', '')
         sql_file_path = sql_file_path.replace("\\", "/")
         tables = self.parse_sql(sql_file_path)
+        print(tables)
 
         if not tables:
             print("No se encontraron tablas en el archivo SQL.")
